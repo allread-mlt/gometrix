@@ -1,0 +1,21 @@
+{
+	"name": "gometrix",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"tamasfe.even-better-toml",
+				"golang.go"
+			],
+			"settings": {
+				"go.useLanguageServer": true,
+				"remote.autoForwardPorts": false
+			}
+		}
+	},
+    "remoteUser": "root",
+	"updateContentCommand": "go mod download"
+}
