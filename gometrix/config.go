@@ -1,9 +1,9 @@
 package gometrix
 
 type StatsdMetricsData struct {
-	ServerHost string `yaml:"host"`
-	ServerPort int64  `yaml:"port"`
-	Prefix     string `yaml:"prefix"`
+	Host   string `yaml:"host"`
+	Port   int    `yaml:"port"`
+	Prefix string `yaml:"prefix"`
 }
 
 type LoggingMetricsData struct {
@@ -12,4 +12,3 @@ type LoggingMetricsData struct {
 	MaxFiles    int    `yaml:"max_files"`
 	MaxFileSize int    `yaml:"max_file_size"`
 }
-

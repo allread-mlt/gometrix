@@ -12,31 +12,13 @@ type statsdClient struct {
 	client *statsd.Client
 }
 
-func (s *StatsdMetricsData) getConfigFromInterface(data interface{}) error {
-	config, ok := data.(map[string]interface{})
+func NewStatsdMetricsClient(data any) (MetricsClient, error) {
+	metricsData, ok := data.(*StatsdMetricsData)
 	if !ok {
-		return fmt.Errorf("invalid statsd client config type: %T", data)
-	}
-	if host, ok := config["host"].(string); ok {
-		s.ServerHost = host
-	} else {
-		return fmt.Errorf("host not found in statsd client config")
+		return nil, fmt.Errorf("expected StatsdMetricsData, got %T", data)
 	}
 
-	if port, ok := config["port"].(int); ok {
-		s.ServerPort = int64(port)
-	}
-	return nil
-}
-
-func NewStatsdMetricsClient(data interface{}) (MetricsClient, error) {
-	metricsData := StatsdMetricsData{}
-	err := metricsData.getConfigFromInterface(data)
-	if err != nil {
-		return nil, err
-	}
-
-	address := fmt.Sprintf("%s:%d", metricsData.ServerHost, metricsData.ServerPort)
+	address := fmt.Sprintf("%s:%d", metricsData.Host, metricsData.Port)
 
 	logrus.Debugf("StatsD metrics client created [%v]", address)
 

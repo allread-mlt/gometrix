@@ -31,55 +31,17 @@ type metricAggregator struct {
 	metricType string
 }
 
-const (
-	defaultTimeout  int = 60 //seconds
-	defaultMaxFiles int = 3
-	defaultMaxSize  int = 10 //MB
-)
-
-func (l *LoggingMetricsData) getConfigFromInterface(data interface{}) error {
-	config, ok := data.(map[string]interface{})
+func NewLoggingMetricsClient(data any) (MetricsClient, error) {
+	metricsData, ok := data.(*LoggingMetricsData)
 	if !ok {
-		return fmt.Errorf("invalid logging metrics client config type: %T", data)
-	}
-
-	if timeout, ok := config["timeout"].(int); ok {
-		l.Timeout = timeout
-	} else {
-		l.Timeout = defaultTimeout
-	}
-
-	if path, ok := config["log_file_path"].(string); ok {
-		l.LogFilePath = path
-	}
-
-	if maxFiles, ok := config["max_files"].(int); ok {
-		l.MaxFiles = maxFiles
-	} else {
-		l.MaxFiles = defaultMaxFiles
-	}
-
-	if maxSize, ok := config["max_file_size"].(int); ok {
-		l.MaxFileSize = maxSize
-	} else {
-		l.MaxFileSize = defaultMaxSize
-	}
-
-	return nil
-}
-
-func NewLoggingMetricsClient(data interface{}) (MetricsClient, error) {
-	metricsData := LoggingMetricsData{}
-	if err := metricsData.getConfigFromInterface(data); err != nil {
-		logrus.Errorf("Error loading metrics configuración [%v]", metricsData)
-		return nil, err
+		return nil, fmt.Errorf("expected LoggingMetricsData, got %T", data)
 	}
 
 	client := loggingMetricsClient{
 		metrics:      make(map[string]*metricAggregator),
 		printTimeout: time.Duration(float64(metricsData.Timeout) * float64(time.Second)),
 		stopChan:     make(chan struct{}),
-		logger:       setupMetricsLogger(metricsData),
+		logger:       setupMetricsLogger(*metricsData),
 	}
 	client.start()
 	return &client, nil
