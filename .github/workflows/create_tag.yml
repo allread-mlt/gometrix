@@ -1,0 +1,33 @@
+name: create-tag-on-merge-master
+
+on:
+  push:
+    branches: [main, "hotfix/**", "feature/**"]
+    paths: ['version/version.go']
+
+jobs:
+  tag:
+    name: Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from version.go
+        id: get_version
+        run:
+          SEMANTIC_VERSION=$(grep 'VERSION =' version/version.go | cut -d'"' -f2)
+          && echo "semantic_version=$SEMANTIC_VERSION" >> $GITHUB_ENV
+
+      - name: setup git config
+        run: |
+          git config user.name "AllRead Automatic CI"
+          git config user.email "tech-support@allread.ai"
+
+      - name: tag new version
+        env:
+          SEMANTIC_VERSION: ${{ env.semantic_version }}
+        run: |
+          git fetch --all --tags
+          git tag -a v$SEMANTIC_VERSION -m "update version to v$SEMANTIC_VERSION"
+          git push origin v$SEMANTIC_VERSION
