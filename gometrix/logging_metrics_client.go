@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type LoggingMetricsClient struct {
+type loggingMetricsClient struct {
 	metrics      map[string]*metricAggregator
 	printTimeout time.Duration
 	totalTime    float64
@@ -68,14 +68,14 @@ func (l *LoggingMetricsData) getConfigFromInterface(data interface{}) error {
 	return nil
 }
 
-func NewLoggingMetricsClient(data interface{}) (*LoggingMetricsClient, error) {
+func NewLoggingMetricsClient(data interface{}) (MetricsClient, error) {
 	metricsData := LoggingMetricsData{}
 	if err := metricsData.getConfigFromInterface(data); err != nil {
 		logrus.Errorf("Error loading metrics configuración [%v]", metricsData)
 		return nil, err
 	}
 
-	client := LoggingMetricsClient{
+	client := loggingMetricsClient{
 		metrics:      make(map[string]*metricAggregator),
 		printTimeout: time.Duration(float64(metricsData.Timeout) * float64(time.Second)),
 		stopChan:     make(chan struct{}),
@@ -85,19 +85,19 @@ func NewLoggingMetricsClient(data interface{}) (*LoggingMetricsClient, error) {
 	return &client, nil
 }
 
-func (c *LoggingMetricsClient) start() {
+func (c *loggingMetricsClient) start() {
 	c.startOnce.Do(func() {
 		c.waitGroup.Add(1)
 		go c.run()
 	})
 }
 
-func (c *LoggingMetricsClient) Stop() {
+func (c *loggingMetricsClient) Stop() {
 	close(c.stopChan)
 	c.waitGroup.Wait()
 }
 
-func (c *LoggingMetricsClient) run() {
+func (c *loggingMetricsClient) run() {
 	defer c.waitGroup.Done()
 	ticker := time.NewTicker(c.printTimeout)
 	defer ticker.Stop()
@@ -113,27 +113,27 @@ func (c *LoggingMetricsClient) run() {
 	}
 }
 
-func (c *LoggingMetricsClient) Increment(metricName string, count int64, _ map[string]any) {
+func (c *loggingMetricsClient) Increment(metricName string, count int64, _ map[string]any) {
 	c.Count(metricName, count, nil)
 }
 
-func (c *LoggingMetricsClient) Decrement(metricName string, count int64, _ map[string]any) {
+func (c *loggingMetricsClient) Decrement(metricName string, count int64, _ map[string]any) {
 	c.Count(metricName, -count, nil)
 }
 
-func (c *LoggingMetricsClient) Count(metricName string, value int64, _ map[string]any) {
+func (c *loggingMetricsClient) Count(metricName string, value int64, _ map[string]any) {
 	c.updateMetric(metricName, "count", float64(value))
 }
 
-func (c *LoggingMetricsClient) Gauge(metricName string, value float64, _ map[string]any) {
+func (c *loggingMetricsClient) Gauge(metricName string, value float64, _ map[string]any) {
 	c.updateMetric(metricName, "gauge", value)
 }
 
-func (c *LoggingMetricsClient) Timing(metricName string, duration time.Duration, _ map[string]any) {
+func (c *loggingMetricsClient) Timing(metricName string, duration time.Duration, _ map[string]any) {
 	c.updateMetric(metricName, "timing", float64(duration.Milliseconds()))
 }
 
-func (c *LoggingMetricsClient) updateMetric(name, mType string, value float64) {
+func (c *loggingMetricsClient) updateMetric(name, mType string, value float64) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -162,7 +162,7 @@ func (c *LoggingMetricsClient) updateMetric(name, mType string, value float64) {
 	}
 }
 
-func (c *LoggingMetricsClient) resetLast() {
+func (c *loggingMetricsClient) resetLast() {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -172,7 +172,7 @@ func (c *LoggingMetricsClient) resetLast() {
 	}
 }
 
-func (c *LoggingMetricsClient) printMetrics() {
+func (c *loggingMetricsClient) printMetrics() {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
