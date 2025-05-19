@@ -8,7 +8,7 @@ import (
 	"github.com/smira/go-statsd"
 )
 
-type StatsdClient struct {
+type statsdClient struct {
 	client *statsd.Client
 }
 
@@ -29,7 +29,7 @@ func (s *StatsdMetricsData) getConfigFromInterface(data interface{}) error {
 	return nil
 }
 
-func NewStatsdMetricsClient(data interface{}) (*StatsdClient, error) {
+func NewStatsdMetricsClient(data interface{}) (MetricsClient, error) {
 	metricsData := StatsdMetricsData{}
 	err := metricsData.getConfigFromInterface(data)
 	if err != nil {
@@ -41,30 +41,30 @@ func NewStatsdMetricsClient(data interface{}) (*StatsdClient, error) {
 	logrus.Debugf("StatsD metrics client created [%v]", address)
 
 	client := statsd.NewClient(address, statsd.MetricPrefix(metricsData.Prefix))
-	return &StatsdClient{client: client}, nil
+	return &statsdClient{client: client}, nil
 }
 
-func (s *StatsdClient) Stop() {
+func (s *statsdClient) Stop() {
 	s.client.Close()
 }
 
-func (s *StatsdClient) Increment(name string, count int64, tagMap map[string]any) {
+func (s *statsdClient) Increment(name string, count int64, tagMap map[string]any) {
 	s.client.Incr(name, count, convertToTags(tagMap)...)
 }
 
-func (s *StatsdClient) Decrement(name string, count int64, tagMap map[string]any) {
+func (s *statsdClient) Decrement(name string, count int64, tagMap map[string]any) {
 	s.client.Decr(name, count, convertToTags(tagMap)...)
 }
 
-func (s *StatsdClient) Count(name string, value int64, tagMap map[string]any) {
+func (s *statsdClient) Count(name string, value int64, tagMap map[string]any) {
 	s.client.Gauge(name, value, convertToTags(tagMap)...)
 }
 
-func (s *StatsdClient) Gauge(name string, value float64, tagMap map[string]any) {
+func (s *statsdClient) Gauge(name string, value float64, tagMap map[string]any) {
 	s.client.Gauge(name, int64(value), convertToTags(tagMap)...)
 }
 
-func (s *StatsdClient) Timing(name string, duration time.Duration, tagMap map[string]any) {
+func (s *statsdClient) Timing(name string, duration time.Duration, tagMap map[string]any) {
 	s.client.PrecisionTiming(name, duration, convertToTags(tagMap)...)
 }
 
