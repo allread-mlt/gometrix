@@ -75,24 +75,24 @@ func (c *loggingMetricsClient) run() {
 	}
 }
 
-func (c *loggingMetricsClient) Increment(metricName string, count int64, _ map[string]any) {
-	c.Count(metricName, count, nil)
+func (c *loggingMetricsClient) Increment(name string, count int64, tagMap ...MetricTag) {
+	c.Count(joinTagsToName(name, tagMap), count)
 }
 
-func (c *loggingMetricsClient) Decrement(metricName string, count int64, _ map[string]any) {
-	c.Count(metricName, -count, nil)
+func (c *loggingMetricsClient) Decrement(name string, count int64, tagMap ...MetricTag) {
+	c.Count(joinTagsToName(name, tagMap), -count)
 }
 
-func (c *loggingMetricsClient) Count(metricName string, value int64, _ map[string]any) {
-	c.updateMetric(metricName, "count", float64(value))
+func (c *loggingMetricsClient) Count(name string, value int64, tagMap ...MetricTag) {
+	c.updateMetric(joinTagsToName(name, tagMap), "count", float64(value))
 }
 
-func (c *loggingMetricsClient) Gauge(metricName string, value float64, _ map[string]any) {
-	c.updateMetric(metricName, "gauge", value)
+func (c *loggingMetricsClient) Gauge(name string, value float64, tagMap ...MetricTag) {
+	c.updateMetric(joinTagsToName(name, tagMap), "gauge", value)
 }
 
-func (c *loggingMetricsClient) Timing(metricName string, duration time.Duration, _ map[string]any) {
-	c.updateMetric(metricName, "timing", float64(duration.Milliseconds()))
+func (c *loggingMetricsClient) Timing(name string, duration time.Duration, tagMap ...MetricTag) {
+	c.updateMetric(joinTagsToName(name, tagMap), "timing", float64(duration.Milliseconds()))
 }
 
 func (c *loggingMetricsClient) updateMetric(name, mType string, value float64) {
