@@ -30,45 +30,22 @@ func (s *statsdClient) Stop() {
 	s.client.Close()
 }
 
-func (s *statsdClient) Increment(name string, count int64, tagMap map[string]any) {
-	s.client.Incr(name, count, convertToTags(tagMap)...)
+func (s *statsdClient) Increment(name string, count int64, tagMap ...MetricTag) {
+	s.client.Incr(joinTagsToName(name, tagMap), count)
 }
 
-func (s *statsdClient) Decrement(name string, count int64, tagMap map[string]any) {
-	s.client.Decr(name, count, convertToTags(tagMap)...)
+func (s *statsdClient) Decrement(name string, count int64, tagMap ...MetricTag) {
+	s.client.Decr(joinTagsToName(name, tagMap), count)
 }
 
-func (s *statsdClient) Count(name string, value int64, tagMap map[string]any) {
-	s.client.Gauge(name, value, convertToTags(tagMap)...)
+func (s *statsdClient) Count(name string, value int64, tagMap ...MetricTag) {
+	s.client.Gauge(joinTagsToName(name, tagMap), value)
 }
 
-func (s *statsdClient) Gauge(name string, value float64, tagMap map[string]any) {
-	s.client.Gauge(name, int64(value), convertToTags(tagMap)...)
+func (s *statsdClient) Gauge(name string, value float64, tagMap ...MetricTag) {
+	s.client.Gauge(joinTagsToName(name, tagMap), int64(value))
 }
 
-func (s *statsdClient) Timing(name string, duration time.Duration, tagMap map[string]any) {
-	s.client.PrecisionTiming(name, duration, convertToTags(tagMap)...)
-}
-
-func convertToTags(tagMap map[string]any) []statsd.Tag {
-	if len(tagMap) == 0 {
-		return nil
-	}
-
-	tags := make([]statsd.Tag, 0, len(tagMap))
-
-	for k, v := range tagMap {
-		switch val := v.(type) {
-		case string:
-			tags = append(tags, statsd.StringTag(k, val))
-		case int:
-			tags = append(tags, statsd.IntTag(k, val))
-		case int64:
-			tags = append(tags, statsd.Int64Tag(k, val))
-		default:
-			tags = append(tags, statsd.StringTag(k, fmt.Sprintf("%v", val)))
-		}
-	}
-
-	return tags
+func (s *statsdClient) Timing(name string, duration time.Duration, tagMap ...MetricTag) {
+	s.client.PrecisionTiming(joinTagsToName(name, tagMap), duration)
 }

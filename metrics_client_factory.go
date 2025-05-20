@@ -70,5 +70,5 @@ func NewMetricsClient(config *MetricsClientConfig) (MetricsClient, error) {
 		return &DummyMetricsClient{}, nil
 	default:
 	}
-	return nil, fmt.Errorf("unknown metrics client type: %s. Creating dummy client", config.Type)
+	return nil, fmt.Errorf("unknown metrics client type: %s", config.Type)
 }
