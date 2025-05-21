@@ -10,14 +10,14 @@ import (
 type MetricsClientType string
 
 const (
-	metricsTypeDummy   MetricsClientType = "dummy"
-	metricsTypeStatsd  MetricsClientType = "statsd"
-	metricsTypeLogging MetricsClientType = "logging"
+	MetricsTypeDummy   MetricsClientType = "dummy"
+	MetricsTypeStatsd  MetricsClientType = "statsd"
+	MetricsTypeLogging MetricsClientType = "logging"
 )
 
 type MetricsClientConfig struct {
 	Type MetricsClientType `yaml:"type"`
-	Data interface{}       `yaml:"data"`
+	Data any               `yaml:"data"`
 }
 
 func (w *MetricsClientConfig) UnmarshalYAML(value *yaml.Node) error {
@@ -37,19 +37,19 @@ func (w *MetricsClientConfig) UnmarshalYAML(value *yaml.Node) error {
 
 	w.Type = temp.Type
 	switch temp.Type {
-	case metricsTypeStatsd:
+	case MetricsTypeStatsd:
 		statsdConfig := &StatsdMetricsData{}
 		if err := temp.Data.Decode(statsdConfig); err != nil {
 			return err
 		}
 		w.Data = statsdConfig
-	case metricsTypeLogging:
+	case MetricsTypeLogging:
 		loggingConfig := &LoggingMetricsData{}
 		if err := temp.Data.Decode(loggingConfig); err != nil {
 			return err
 		}
 		w.Data = loggingConfig
-	case metricsTypeDummy:
+	case MetricsTypeDummy:
 		break
 	default:
 		return fmt.Errorf("unknown type: %s", temp.Type)
@@ -59,13 +59,13 @@ func (w *MetricsClientConfig) UnmarshalYAML(value *yaml.Node) error {
 
 func NewMetricsClient(config *MetricsClientConfig) (MetricsClient, error) {
 	switch MetricsClientType(config.Type) {
-	case metricsTypeStatsd:
+	case MetricsTypeStatsd:
 		logrus.Debugf("Creating statsD metrics client")
 		return NewStatsdMetricsClient(config.Data)
-	case metricsTypeLogging:
+	case MetricsTypeLogging:
 		logrus.Debugf("Creating logging metrics client")
 		return NewLoggingMetricsClient(config.Data)
-	case metricsTypeDummy:
+	case MetricsTypeDummy:
 		logrus.Debugf("Creating dummy metrics client")
 		return &DummyMetricsClient{}, nil
 	default:

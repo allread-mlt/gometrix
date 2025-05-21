@@ -35,7 +35,7 @@ import "github.com/allread-mlt/gometrix"
 ```Go
 config := &gometrix.MetricsClientConfig{
     ClientType: gometrix.metricsTypeStatsd, // or metricsTypeLogging/metricsTypeDummy
-    ClientData: map[string]interface{}{
+    ClientData: map[string]any{
         // Configuration specific to your client type
     },
 }
